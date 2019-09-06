@@ -1,2 +1,0 @@
-# gocloudurls
-GoCloud.dev helper
