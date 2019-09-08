@@ -3,6 +3,7 @@ package gocloudurls
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -14,6 +15,10 @@ import (
 // If "mem" is specified, it returns "memblob" URL.
 // It other names specified, it returns fileblob URL.
 func NormalizeBlobURL(srcUrl string, environ []string) (string, error) {
+	return normalizeBlobURL(srcUrl, os.Environ())
+}
+
+func normalizeBlobURL(srcUrl string, environ []string) (string, error) {
 	u, err := url.Parse(srcUrl)
 	if err != nil {
 		return "", err

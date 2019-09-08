@@ -60,7 +60,7 @@ func TestNormalizeBlobURL(t *testing.T) {
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
-			result, err := NormalizeBlobURL(testcase.src, testcase.environs)
+			result, err := normalizeBlobURL(testcase.src, testcase.environs)
 			if testcase.hasError {
 				assert.NotNil(t, err)
 			} else {
