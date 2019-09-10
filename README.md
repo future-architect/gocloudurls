@@ -31,6 +31,8 @@ Examples:
 
 It gets AWS region name form ``AWS_REGION`` environment variable that is acceptable in AWS Lambda.
 
+``MustNormalizeBlobURL`` raise panic if there is error.
+
 ### ``func NormalizePubSubURL(srcUrl string) (string, error)``
 
 It normalizes shorter version of PubSub/SQS/SNS identifier into gocloud.dev acceptable URLs.
@@ -51,7 +53,9 @@ gocloudurls.NormalizePubSubURL("https://sqs.us-east-2.amazonaws.com/123456789012
 gocloudurls.NormalizePubSubURL("gcppubsub://myproject/mytopic")
 // "gcppubsub://projects/myproject/topics/mytopic"
 ```
-			
+
+``MustNormalizePubSubURL`` raise panic if there is error.
+
 ### ``func NormalizeDocStoreURL(srcUrl string, opt Option) (string, error)``
 
 ```go
@@ -105,6 +109,8 @@ goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
 })
 // "dynamodb://tasks?partition_key=job_id&sort_key=_id"
 ```
+
+``MustNormalizeDocStoreURL`` raise panic if there is error.
 
 ## License
 

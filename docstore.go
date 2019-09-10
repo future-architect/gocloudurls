@@ -24,6 +24,40 @@ type Option struct {
 }
 
 // NormalizeDocStoreURL normalizes Document Store URL
+//
+// Usually, application uses multiple document collections (≒ table in RDB).
+// So it provides API to replace collection name by application code (config specify until DB location).
+//
+// Default ``KeyName`` is ``"_id"`` as same as MongoDB.
+//
+// If ``PartitionKey`` is specified for DynamoDB, ``KeyName`` is specified as ``sort_key``.
+// This config is ignored for other DocStores.
+//
+// Examples:
+//
+//   goclodurls.NormalizePubSubURL("mem://", goclodurls.Option{
+//       Collection: "addresses",
+//   })
+//   // "mem://addresses/_id"
+//
+//   goclodurls.NormalizePubSubURL("firestore://my-project", goclodurls.Option{
+//       Collection: "addresses",
+//   })
+//   // "firestore://projects/my-project/databases/(default)/documents/addresses?name_field=_id"
+//
+//   goclodurls.NormalizePubSubURL("firestore://my-project/my-documents/addresses", goclodurls.Option{})
+//   // "firestore://projects/my-project/databases/my-documents/documents/addresses?name_field=_id"
+//
+//   goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
+//       Collection: "tasks",
+//   })
+//   // "dynamodb://tasks?partition_key=_id"
+//
+//   goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
+//       Collection:   "tasks",
+//       PartitionKey: "job_id"
+//   })
+//   // "dynamodb://tasks?partition_key=job_id&sort_key=_id"
 func NormalizeDocStoreURL(srcUrl string, opt Option) (string, error) {
 	if opt.KeyName == "" {
 		opt.KeyName = "_id"
@@ -44,6 +78,17 @@ func NormalizeDocStoreURL(srcUrl string, opt Option) (string, error) {
 	}
 	return "", fmt.Errorf("Unknown scheme of docstore: '%s'", u.Scheme)
 }
+
+
+// MustNormalizeDocStoreURL is similar to NormalizeDocStoreURL but raise panic if there is error
+func MustNormalizeDocStoreURL(srcUrl string, opt Option) string {
+	result, err := NormalizeDocStoreURL(srcUrl, opt)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
+
 
 func normalizeMemstore(u *url.URL, keyName, collection string) (string, error) {
 	if collection == "" && u.Host == "" {

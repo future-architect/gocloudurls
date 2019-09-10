@@ -8,6 +8,15 @@ import (
 )
 
 // NormalizePubSubURL normalize URL for PubSub.
+//
+// Examples:
+//
+//   * "arn:aws:sns:us-east-2:123456789012:mytopic"
+//     → "awssns:///arn:aws:sns:us-east-2:123456789012:mytopic?region=us-east-2"
+//   * "https://sqs.us-east-2.amazonaws.com/123456789012/myqueue"
+//     → "awssqs://https://sqs.us-east-2.amazonaws.com/123456789012/myqueue?region=us-east-2"
+//   * "gcppubsub://myproject/mytopic"
+//     → "gcppubsub://projects/myproject/topics/mytopic"
 func NormalizePubSubURL(srcUrl string) (string, error) {
 	if isAWSPubSub(srcUrl) {
 		return normalizeAWSPubSub(srcUrl)
@@ -15,6 +24,15 @@ func NormalizePubSubURL(srcUrl string) (string, error) {
 		return normalizeGCPPubSub(srcUrl)
 	}
 	return srcUrl, nil
+}
+
+// MustNormalizePubSubURL is similar to NormalizePubSubURL but raise panic if there is error
+func MustNormalizePubSubURL(srcUrl string) string {
+	result, err := NormalizePubSubURL(srcUrl)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func isAWSPubSub(path string) bool {

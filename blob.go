@@ -10,12 +10,27 @@ import (
 // NormalizeBlobURL normalize blob URL. environ assumes os.Environ().
 //
 // When region is not specified for S3, this function gets region information from AWS_REGION
-// environment variable:
+// environment variable.
 //
 // If "mem" is specified, it returns "memblob" URL.
 // It other names specified, it returns fileblob URL.
+//
+// Example:
+//
+//   * ``mem`` → ``mem://``
+//   * ``folder`` → ``file://folder``
+//   * ``s3://my-bucket`` → ``s3://my-bucket?region=us-west-1``
 func NormalizeBlobURL(srcUrl string, environ []string) (string, error) {
 	return normalizeBlobURL(srcUrl, os.Environ())
+}
+
+// MustNormalizeBlobURL is similar to NormalizeBlobURL but raise panic if there is error
+func MustNormalizeBlobURL(srcUrl string, environ []string) string {
+	result, err := NormalizeBlobURL(srcUrl, environ)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func normalizeBlobURL(srcUrl string, environ []string) (string, error) {
