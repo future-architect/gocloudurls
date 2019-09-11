@@ -79,7 +79,6 @@ func NormalizeDocStoreURL(srcUrl string, opt Option) (string, error) {
 	return "", fmt.Errorf("Unknown scheme of docstore: '%s'", u.Scheme)
 }
 
-
 // MustNormalizeDocStoreURL is similar to NormalizeDocStoreURL but raise panic if there is error
 func MustNormalizeDocStoreURL(srcUrl string, opt Option) string {
 	result, err := NormalizeDocStoreURL(srcUrl, opt)
@@ -88,7 +87,6 @@ func MustNormalizeDocStoreURL(srcUrl string, opt Option) string {
 	}
 	return result
 }
-
 
 func normalizeMemstore(u *url.URL, keyName, collection string) (string, error) {
 	if collection == "" && u.Host == "" {

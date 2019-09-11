@@ -146,6 +146,14 @@ func TestNormalizeMemstore(t *testing.T) {
 			hasError:   true,
 			collection: "",
 		},
+		{
+			name:       "keep query",
+			src:        "mem://?filename=local.memdb&revision_field=updated_at",
+			keyName:    "_id",
+			hasError:   false,
+			collection: "jobs",
+			expected:   "mem://jobs/_id?filename=local.memdb&revision_field=updated_at",
+		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
@@ -266,35 +274,35 @@ func TestNormalizeDocStoreURL(t *testing.T) {
 			src:        "dynamodb://my-db",
 			collection: "tasks",
 			expected:   "dynamodb://tasks?partition_key=_id",
-			hasError:    false,
+			hasError:   false,
 		},
 		{
 			name:       "MongoDB",
 			src:        "mongo://my-db",
 			collection: "tasks",
 			expected:   "mongo://my-db/tasks?id_field=_id",
-			hasError:    false,
+			hasError:   false,
 		},
 		{
 			name:       "Firestore",
 			src:        "firestore://my-project/my-database",
 			collection: "tasks",
 			expected:   "firestore://projects/my-project/databases/my-database/documents/tasks?name_field=_id",
-			hasError:    false,
+			hasError:   false,
 		},
 		{
 			name:       "Mem",
 			src:        "mem://",
 			collection: "tasks",
 			expected:   "mem://tasks/_id",
-			hasError:    false,
+			hasError:   false,
 		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			result, err := NormalizeDocStoreURL(testcase.src, Option{
 				Collection: testcase.collection,
-				KeyName: "_id",
+				KeyName:    "_id",
 			})
 			if testcase.hasError {
 				assert.NotNil(t, err)
