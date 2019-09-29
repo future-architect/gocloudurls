@@ -116,12 +116,14 @@ func TestFixFirestore(t *testing.T) {
 
 func TestNormalizeMemstore(t *testing.T) {
 	testcases := []struct {
-		name       string
-		src        string
-		keyName    string
-		collection string
-		hasError   bool
-		expected   string
+		name          string
+		src           string
+		keyName       string
+		collection    string
+		filename      string
+		revisionField string
+		hasError      bool
+		expected      string
 	}{
 		{
 			name:       "with inline collection",
@@ -154,11 +156,21 @@ func TestNormalizeMemstore(t *testing.T) {
 			collection: "jobs",
 			expected:   "mem://jobs/_id?filename=local.memdb&revision_field=updated_at",
 		},
+		{
+			name:          "filename, revision_field",
+			src:           "mem://",
+			keyName:       "_id",
+			hasError:      false,
+			collection:    "jobs",
+			filename:      "local.memdb",
+			revisionField: "revision",
+			expected:      "mem://jobs/_id?filename=local.memdb&revision_field=revision",
+		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			u, _ := url.Parse(testcase.src)
-			result, err := normalizeMemstore(u, testcase.keyName, testcase.collection)
+			result, err := normalizeMemstore(u, testcase.keyName, testcase.collection, testcase.filename, testcase.revisionField)
 			if testcase.hasError {
 				assert.NotNil(t, err)
 			} else {

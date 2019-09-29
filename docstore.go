@@ -18,9 +18,11 @@ import (
 // If Collection is specified, it returns URL for the collection. It is good for applications that uses multiple
 // collections.
 type Option struct {
-	KeyName      string
-	PartitionKey string
-	Collection   string
+	KeyName       string
+	PartitionKey  string
+	Collection    string
+	FileName      string
+	RevisionField string
 }
 
 // NormalizeDocStoreURL normalizes Document Store URL
@@ -68,7 +70,7 @@ func NormalizeDocStoreURL(srcUrl string, opt Option) (string, error) {
 	}
 	switch u.Scheme {
 	case "mem":
-		return normalizeMemstore(u, opt.KeyName, opt.Collection)
+		return normalizeMemstore(u, opt.KeyName, opt.Collection, opt.FileName, opt.RevisionField)
 	case "firestore":
 		return normalizeFirestore(u, opt.KeyName, opt.Collection)
 	case "dynamodb":
@@ -88,7 +90,7 @@ func MustNormalizeDocStoreURL(srcUrl string, opt Option) string {
 	return result
 }
 
-func normalizeMemstore(u *url.URL, keyName, collection string) (string, error) {
+func normalizeMemstore(u *url.URL, keyName, collection, filename, revision string) (string, error) {
 	if collection == "" && u.Host == "" {
 		return "", errors.New("opt.Collection is required if source URL doesn't have collection")
 	}
@@ -96,6 +98,14 @@ func normalizeMemstore(u *url.URL, keyName, collection string) (string, error) {
 		u.Host = collection
 	}
 	u.Path = keyName
+	q := u.Query()
+	if filename != "" {
+		q.Set("filename", filename)
+	}
+	if revision != "" {
+		q.Set("revision_field", revision)
+	}
+	u.RawQuery = q.Encode()
 	return u.String(), nil
 }
 
