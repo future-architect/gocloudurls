@@ -1,9 +1,10 @@
 package gocloudurls
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFixFirestore(t *testing.T) {
@@ -12,6 +13,7 @@ func TestFixFirestore(t *testing.T) {
 		hasError   bool
 		src        string
 		collection string
+		keyName    string
 		expected   string
 	}{
 		{
@@ -62,48 +64,63 @@ func TestFixFirestore(t *testing.T) {
 			collection: "jobs",
 		},
 		{
-			name:       "with collection",
+			name:       "with Collection",
 			hasError:   false,
 			src:        "firestore://projects/my-project/databases/my-database/documents/jobs",
 			collection: "",
 			expected:   "firestore://projects/my-project/databases/my-database/documents/jobs?name_field=_id",
 		},
 		{
-			name:       "with collection: too short error",
+			name:       "with Collection: too short error",
 			hasError:   true,
 			src:        "firestore://projects/my-project/databases/my-database/documents",
 			collection: "",
 		},
 		{
-			name:       "with collection: too long error",
+			name:       "with Collection: too long error",
 			hasError:   true,
 			src:        "firestore://projects/my-project/databases/my-database/documents/jobs/test",
 			collection: "",
 		},
 		{
-			name:       "with collection (short form)",
+			name:       "with Collection (short form)",
 			hasError:   false,
 			src:        "firestore://my-project/my-database/jobs",
 			collection: "",
 			expected:   "firestore://projects/my-project/databases/my-database/documents/jobs?name_field=_id",
 		},
 		{
-			name:       "with collection (short form): too short error",
+			name:       "with Collection (short form): too short error",
 			hasError:   true,
 			src:        "firestore://my-project/my-database",
 			collection: "",
 		},
 		{
-			name:       "with collection (short form): too long error",
+			name:       "with Collection (short form): too long error",
 			hasError:   true,
 			src:        "firestore://my-project/my-database/jobs/test",
 			collection: "",
+		},
+		{
+			name:       "with name filed",
+			hasError:   false,
+			src:        "firestore://projects/my-project/databases/my-database/documents/jobs",
+			collection: "",
+			keyName:    "name",
+			expected:   "firestore://projects/my-project/databases/my-database/documents/jobs?name_field=name",
+		},
+		{
+			name:       "with Collection and name filed",
+			hasError:   false,
+			src:        "firestore://projects/my-project/databases/my-database/documents/jobs?name_field=id",
+			collection: "",
+			expected:   "firestore://projects/my-project/databases/my-database/documents/jobs?name_field=id",
 		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			u, _ := url.Parse(testcase.src)
-			result, err := normalizeFirestore(u, "_id", testcase.collection)
+			result, err := normalizeFirestore(u, testcase.keyName, testcase.collection)
 			if !testcase.hasError {
 				assert.Nil(t, err)
 				assert.Equal(t, testcase.expected, result)
@@ -126,7 +143,7 @@ func TestNormalizeMemstore(t *testing.T) {
 		expected      string
 	}{
 		{
-			name:       "with inline collection",
+			name:       "with inline Collection",
 			src:        "mem://jobs",
 			keyName:    "_id",
 			hasError:   false,
@@ -134,7 +151,7 @@ func TestNormalizeMemstore(t *testing.T) {
 			expected:   "mem://jobs/_id",
 		},
 		{
-			name:       "without inline collection",
+			name:       "without inline Collection",
 			src:        "mem://",
 			keyName:    "_id",
 			hasError:   false,
@@ -142,7 +159,7 @@ func TestNormalizeMemstore(t *testing.T) {
 			expected:   "mem://jobs/_id",
 		},
 		{
-			name:       "error if both URL and collection parameter are empty",
+			name:       "error if both URL and Collection parameter are empty",
 			src:        "mem://",
 			keyName:    "_id",
 			hasError:   true,
@@ -166,6 +183,14 @@ func TestNormalizeMemstore(t *testing.T) {
 			revisionField: "revision",
 			expected:      "mem://jobs/_id?filename=local.memdb&revision_field=revision",
 		},
+		{
+			name:       "key is already in path",
+			src:        "mem://collections/key",
+			keyName:    "",
+			hasError:   false,
+			collection: "",
+			expected:   "mem://collections/key",
+		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
@@ -186,6 +211,7 @@ func TestNormalizeDynamo(t *testing.T) {
 		name         string
 		src          string
 		collection   string
+		keyName      string
 		partitionKey string
 		hasError     bool
 		expected     string
@@ -194,39 +220,69 @@ func TestNormalizeDynamo(t *testing.T) {
 			name:         "simple",
 			src:          "dynamodb:",
 			collection:   "tasks",
+			keyName:      "",
 			partitionKey: "",
 			hasError:     false,
 			expected:     "dynamodb://tasks?partition_key=_id",
+		},
+		{
+			name:         "keyName becomes parition key",
+			src:          "dynamodb:",
+			collection:   "tasks",
+			keyName:      "key",
+			partitionKey: "job_id",
+			hasError:     false,
+			expected:     "dynamodb://tasks?partition_key=job_id&sort_key=key",
 		},
 		{
 			name:         "sort key",
 			src:          "dynamodb:",
 			collection:   "tasks",
+			keyName:      "",
 			partitionKey: "job_id",
 			hasError:     false,
 			expected:     "dynamodb://tasks?partition_key=job_id&sort_key=_id",
 		},
 		{
-			name:         "with collection",
+			name:         "with Collection",
 			src:          "dynamodb://tasks",
 			collection:   "",
+			keyName:      "",
 			partitionKey: "",
 			hasError:     false,
 			expected:     "dynamodb://tasks?partition_key=_id",
 		},
 		{
-			name:         "sort key with collection",
+			name:         "sort key with Collection",
 			src:          "dynamodb://tasks",
 			collection:   "",
 			partitionKey: "job_id",
 			hasError:     false,
 			expected:     "dynamodb://tasks?partition_key=job_id&sort_key=_id",
 		},
+		{
+			name:         "partitionKey is in query",
+			src:          "dynamodb://tasks?partition_key=name",
+			collection:   "",
+			keyName:      "",
+			partitionKey: "",
+			hasError:     false,
+			expected:     "dynamodb://tasks?partition_key=name",
+		},
+		{
+			name:         "overwrite partitionKey is in query",
+			src:          "dynamodb://tasks?partition_key=name",
+			collection:   "",
+			keyName:      "_id",
+			partitionKey: "",
+			hasError:     false,
+			expected:     "dynamodb://tasks?partition_key=_id",
+		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			u, _ := url.Parse(testcase.src)
-			result, err := normalizeDynamo(u, "_id", testcase.partitionKey, testcase.collection)
+			result, err := normalizeDynamo(u, testcase.keyName, testcase.partitionKey, testcase.collection)
 			if !testcase.hasError {
 				assert.Nil(t, err)
 				assert.Equal(t, testcase.expected, result)
@@ -241,6 +297,7 @@ func TestNormalizeMongo(t *testing.T) {
 		name       string
 		src        string
 		collection string
+		keyName    string
 		hasError   bool
 		expected   string
 	}{
@@ -248,21 +305,39 @@ func TestNormalizeMongo(t *testing.T) {
 			name:       "simple",
 			src:        "mongo://my-db",
 			collection: "tasks",
+			keyName:    "",
 			hasError:   false,
 			expected:   "mongo://my-db/tasks?id_field=_id",
 		},
 		{
-			name:       "with collection",
+			name:       "specify id_field",
+			src:        "mongo://my-db",
+			collection: "tasks",
+			keyName:    "name",
+			hasError:   false,
+			expected:   "mongo://my-db/tasks?id_field=name",
+		},
+		{
+			name:       "with Collection",
 			src:        "mongo://my-db/tasks",
 			collection: "",
+			keyName:    "",
 			hasError:   false,
 			expected:   "mongo://my-db/tasks?id_field=_id",
+		},
+		{
+			name:       "with Collection and id_field",
+			src:        "mongo://my-db/tasks?id_field=id",
+			collection: "",
+			keyName:    "",
+			hasError:   false,
+			expected:   "mongo://my-db/tasks?id_field=id",
 		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			u, _ := url.Parse(testcase.src)
-			result, err := normalizeMongo(u, "_id", testcase.collection)
+			result, err := normalizeMongo(u, testcase.keyName, testcase.collection)
 			if testcase.hasError {
 				assert.NotNil(t, err)
 			} else {
@@ -322,7 +397,6 @@ func TestNormalizeDocStoreURL(t *testing.T) {
 				assert.Nil(t, err)
 				assert.Equal(t, testcase.expected, result)
 			}
-
 		})
 	}
 }
