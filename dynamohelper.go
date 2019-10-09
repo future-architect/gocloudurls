@@ -13,6 +13,21 @@ type Field struct {
 }
 
 // DynamoDBSchema creates AWS CLI command to create table.
+//
+// For example you makes the following struct to handle DynamoDB record:
+//
+//   type Person struct {
+//	     Name string `docstore:"name"`
+//	     Age  int
+//   }
+//
+//   ds, err := NewDynamoDBSchema(&Person{}, MustMustNormalizeDocStoreURL("dynamodb://persons"))
+//   ds.CreateTableCommand()
+//   // returns slice of string.
+//   // "aws", "dynamodb", "create-table", "--table-name", "persons",
+//	 // "--attribute-definitions", "AttributeName=name,AttributeType=S",
+//	 // "--key-schema", "AttributeName=name,KeyType=HASH",
+//	 // "--provisioned-throughput", "ReadCapacityUnits=5,WriteCapacityUnits=5",
 type DynamoDBSchema struct {
 	Collection        string
 	PartitionKeyField *Field

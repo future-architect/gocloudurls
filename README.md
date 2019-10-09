@@ -112,6 +112,40 @@ goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
 
 ``MustNormalizeDocStoreURL`` raise panic if there is error.
 
+## Struct
+
+``DynamoDBSchema`` creates AWS CLI command to create table.
+
+For example you makes the following struct to handle DynamoDB record:
+
+```go
+type Person struct {
+   Name string `docstore:"name"`
+   Age  int
+}
+```
+
+You can get AWS command options:
+
+```go
+ds, err := NewDynamoDBSchema(&Person{}, MustMustNormalizeDocStoreURL("dynamodb://persons"))
+ds.CreateTableCommand()
+// It returns slice of string.
+// "aws", "dynamodb", "create-table", "--table-name", "persons",
+// "--attribute-definitions", "AttributeName=name,AttributeType=S",
+// "--key-schema", "AttributeName=name,KeyType=HASH",
+// "--provisioned-throughput", "ReadCapacityUnits=5,WriteCapacityUnits=5",
+```
+
+If you can modify Read/Write capacity unis, you can use SchemaOption:
+
+```go
+ds.CreateTableCommand(SchemaOption{
+    ReadCapacityUnits: 10,
+    WriteCapacityUnits: 10,
+})
+```
+
 ## License
 
 Apache 2
