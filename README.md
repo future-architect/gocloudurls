@@ -1,6 +1,6 @@
 # gocloudurls
 
-[![GoDoc](https://godoc.org/github.com/shibukawa/gocloudurls?status.svg)](https://godoc.org/github.com/shibukawa/gocloudurls)
+[![GoDoc](https://godoc.org/github.com/future-architect/gocloudurls?status.svg)](https://godoc.org/github.com/future-architect/gocloudurls)
 
 gocloudurls package is a helper for gocloud.dev.
 

@@ -1,4 +1,4 @@
-module github.com/shibukawa/gocloudurls
+module github.com/future-architect/gocloudurls
 
 go 1.12
 
