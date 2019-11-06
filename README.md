@@ -77,33 +77,33 @@ This config is ignored for other DocStores.
 Examples:
 
 ```go
-goclodurls.NormalizePubSubURL("mem://", goclodurls.Option{
+goclodurls.NormalizeDocStoreURL("mem://", goclodurls.Option{
     Collection: "addresses",
 })
 // "mem://addresses/_id"
 ```
 
 ```go
-goclodurls.NormalizePubSubURL("firestore://my-project", goclodurls.Option{
+goclodurls.NormalizeDocStoreURL("firestore://my-project", goclodurls.Option{
     Collection: "addresses",
 })
 // "firestore://projects/my-project/databases/(default)/documents/addresses?name_field=_id"
 ```
 
 ```go
-goclodurls.NormalizePubSubURL("firestore://my-project/my-documents/addresses", goclodurls.Option{})
+goclodurls.NormalizeDocStoreURL("firestore://my-project/my-documents/addresses", goclodurls.Option{})
 // "firestore://projects/my-project/databases/my-documents/documents/addresses?name_field=_id"
 ```
 
 ```go
-goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
+goclodurls.NormalizeDocStoreURL("dynamodb://", goclodurls.Option{
     Collection: "tasks",
 })
 // "dynamodb://tasks?partition_key=_id"
 ```
 
 ```go
-goclodurls.NormalizePubSubURL("dynamodb://", goclodurls.Option{
+goclodurls.NormalizeDocStoreURL("dynamodb://", goclodurls.Option{
     Collection:   "tasks",
     PartitionKey: "job_id"
 })
